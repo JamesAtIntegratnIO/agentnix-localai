@@ -1,16 +1,20 @@
 { config, pkgs, lib, username, ... }:
 let
   logDir = "/Users/${username}/Library/Logs/local-ai";
+  qdrantDataDir = "/Users/${username}/Library/Application Support/local-ai/qdrant";
 in
 {
-  # No activation script needed — ~/Library/Logs is user-owned and always exists.
-  # launchd user agents can create subdirs themselves via WorkingDirectory,
-  # but the simplest fix is simply pointing logs at a path that always exists.
+  # Keep the local AI directories writable for launchd user agents.
+  # Qdrant writes temporary snapshot data relative to CWD.
+  system.activationScripts.localAiDirs.text = ''
+    /bin/mkdir -p "${logDir}" "${qdrantDataDir}"
+    /usr/sbin/chown -R ${username}:staff "/Users/${username}/Library/Logs/local-ai" "/Users/${username}/Library/Application Support/local-ai"
+  '';
 
   # Qdrant vector-database config.
   environment.etc."local-ai/qdrant.yaml".text = ''
     storage:
-      storage_path: /Users/${username}/Library/Application Support/local-ai/qdrant
+      storage_path: ${qdrantDataDir}
 
     service:
       host: 127.0.0.1
@@ -38,6 +42,7 @@ in
   launchd.user.agents.qdrant = {
     serviceConfig = {
       Label = "org.nixos.qdrant";
+      WorkingDirectory = qdrantDataDir;
       ProgramArguments = [
         "${pkgs.qdrant}/bin/qdrant"
         "--config-path" "/etc/local-ai/qdrant.yaml"

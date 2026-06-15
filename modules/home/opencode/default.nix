@@ -85,6 +85,14 @@ let
 
       Before starting any implementation task, load the `cq` skill and follow its Core Protocol.
       <!-- cq:end -->
+
+      <!-- qdrant:start -->
+      ## Qdrant Memory
+
+      Use the `qdrant` MCP server for semantic memory whenever context from prior tasks could help.
+      At task start, retrieve relevant memory from Qdrant.
+      Before finishing, write concise implementation notes and decisions back to Qdrant.
+      <!-- qdrant:end -->
     '';
   };
 in
