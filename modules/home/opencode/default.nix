@@ -89,5 +89,9 @@ let
   };
 in
 {
-  home.file.".config/opencode".source = opencodeEnv;
+  home.file.".config/opencode" = {
+    source = opencodeEnv;
+    recursive = true;
+    force = true;
+  };
 }
