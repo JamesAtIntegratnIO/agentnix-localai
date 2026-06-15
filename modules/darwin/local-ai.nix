@@ -2,6 +2,7 @@
 let
   logDir = "/Users/${username}/Library/Logs/local-ai";
   qdrantDataDir = "/Users/${username}/Library/Application Support/local-ai/qdrant";
+  enableOllama = false;
 in
 {
   # Keep the local AI directories writable for launchd user agents.
@@ -22,8 +23,9 @@ in
       grpc_port: 6334
   '';
 
-  # Ollama — user agent for Metal/GPU access.
-  launchd.user.agents.ollama = {
+  # Keep the service definition in-tree but disabled by default.
+  # Flip to true when you want local Ollama inference back.
+  launchd.user.agents.ollama = lib.mkIf enableOllama {
     serviceConfig = {
       Label = "org.nixos.ollama";
       ProgramArguments = [ "${pkgs.ollama}/bin/ollama" "serve" ];

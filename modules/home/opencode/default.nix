@@ -104,12 +104,56 @@ let
       <!-- openspec:end -->
     '';
   };
+
+  # Generate OpenSpec OpenCode command and skill assets in a throwaway workspace
+  # so they are managed declaratively by Nix and survive rebuilds.
+  # Node.js script that extracts embedded skill/command templates from the
+  # OpenSpec package without invoking the CLI (which makes a telemetry network
+  # call that hangs inside the Nix sandbox).
+  openspecExtractScript = pkgs.writeText "openspec-extract.mjs" ''
+    import { getSkillTemplates, getCommandTemplates }
+      from '${openspec}/lib/node_modules/@fission-ai/openspec/dist/core/shared/skill-generation.js';
+    import { writeFileSync, mkdirSync } from 'fs';
+
+    const out  = process.env.out;
+    const core = ['propose', 'explore', 'apply', 'sync', 'archive'];
+
+    for (const { dirName, template } of getSkillTemplates(core)) {
+      const dir = out + '/skills/' + dirName;
+      mkdirSync(dir, { recursive: true });
+      const fm = '---\nname: ' + template.name
+               + '\ndescription: "' + template.description + '"\n---\n\n';
+      writeFileSync(dir + '/SKILL.md', fm + template.instructions + '\n');
+    }
+
+    for (const { id, template } of getCommandTemplates(core)) {
+      writeFileSync(out + '/commands/opsx-' + id + '.md', template.content + '\n');
+    }
+  '';
+
+  openspecOpencodeAssets = pkgs.runCommand "openspec-opencode-assets" {} ''
+    mkdir -p "$out/commands" "$out/skills"
+    ${pkgs.nodejs}/bin/node ${openspecExtractScript}
+  '';
+
+  # Overlay OpenSpec-generated assets on top of the base opencode environment.
+  opencodeEnvWithOpenSpec = pkgs.runCommand "opencode-env-with-openspec" {} ''
+    mkdir -p "$out"
+    cp -rL ${opencodeEnv}/. "$out/"
+    # Source trees in the Nix store can carry read-only modes; relax write bits
+    # in the build output before overlaying generated OpenSpec assets.
+    chmod -R u+w "$out"
+
+    mkdir -p "$out/commands" "$out/skills"
+    cp -rL ${openspecOpencodeAssets}/commands/. "$out/commands/"
+    cp -rL ${openspecOpencodeAssets}/skills/. "$out/skills/"
+  '';
 in
 {
   home.packages = [ pkgs.opencode cq openspec ];
 
   home.file.".config/opencode" = {
-    source = opencodeEnv;
+    source = opencodeEnvWithOpenSpec;
     recursive = true;
     force = true;
   };
