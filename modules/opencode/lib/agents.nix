@@ -53,8 +53,8 @@ let
   }) agents;
 in
 pkgs.runCommand "opencode-agents" {} (
-  ''mkdir -p "$out"''
-  + lib.concatMapStrings ({ name, drv }: ''
-    cp ${drv} "$out/${name}.md"
-  '') agentPaths
+  lib.concatStringsSep "\n" (
+    [ ''mkdir -p "$out"'' ]
+    ++ map ({ name, drv }: ''cp ${drv} "$out/${name}.md"'') agentPaths
+  )
 )
