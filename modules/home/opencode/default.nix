@@ -1,6 +1,7 @@
-{ pkgs, username, lib, ... }:
+{ pkgs, username, lib, inputs, ... }:
 let
   mkOpencodeEnv = (import ../../opencode { inherit pkgs lib; }).mkOpencodeEnv;
+  openspec = inputs.openspec.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
   # cq source — skill files, commands, and MCP binary all come from the same pin.
   cqSrc = pkgs.fetchFromGitHub {
@@ -93,11 +94,19 @@ let
       At task start, retrieve relevant memory from Qdrant.
       Before finishing, write concise implementation notes and decisions back to Qdrant.
       <!-- qdrant:end -->
+
+      <!-- openspec:start -->
+      ## OpenSpec
+
+      For non-trivial features or refactors, use OpenSpec to define scope and tasks before implementation.
+      Prefer: `openspec init` (once per repo), `/opsx:propose <change>`, `/opsx:apply`, and `/opsx:archive`.
+      Keep implementation aligned to the active OpenSpec artifacts.
+      <!-- openspec:end -->
     '';
   };
 in
 {
-  home.packages = [ pkgs.opencode cq ];
+  home.packages = [ pkgs.opencode cq openspec ];
 
   home.file.".config/opencode" = {
     source = opencodeEnv;
