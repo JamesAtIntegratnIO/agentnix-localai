@@ -19,7 +19,7 @@ buildGoModule rec {
   vendorHash = "sha256-TCHb0/npCwXzCbWcQMD9t0U5ZP+u0H11+ThLX+YWaRI=";
 
   # The Go module builds a binary named "cli" (the subdirectory name).
-  # Rename it to "cq" so it's on PATH as expected.
+  # Rename it to "cq" so it is on PATH as expected.
   postInstall = ''
     mv $out/bin/cli $out/bin/cq
   '';

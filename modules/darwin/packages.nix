@@ -1,7 +1,5 @@
 { pkgs }:
 let
-  cq = pkgs.callPackage ./pkgs/cq.nix {};
-
   # Version control & security
   vcs = with pkgs; [
     git
@@ -36,11 +34,9 @@ let
     uv   # Python package runner — needed for uvx mcp-server-qdrant
   ];
 
-  # Local AI stack — cq is a custom derivation defined above.
-  ai = [ pkgs.ollama pkgs.qdrant cq ];
+  # Local AI stack
+  ai = [ pkgs.ollama pkgs.qdrant ];
 in {
-  # Named derivations consumed by other modules.
-  inherit cq;
   # Flat list for environment.systemPackages.
   all = vcs ++ editors ++ network ++ monitoring ++ utils ++ languages ++ ai;
 }

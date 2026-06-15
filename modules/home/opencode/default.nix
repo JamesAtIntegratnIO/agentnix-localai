@@ -18,8 +18,8 @@ let
     hash  = "sha256-ZM7BC8uHPzAGwUa1niV7TEuUHUAgaJB8Eska9ufljSM=";
   };
 
-  # cq binary (cached; same derivation as darwin/pkgs/cq.nix).
-  cq = pkgs.callPackage ../../darwin/pkgs/cq.nix {};
+  # cq binary used by shell completion and cq MCP server.
+  cq = pkgs.callPackage ./pkgs/cq.nix {};
 
   # Strip the `name:` frontmatter field (opencode uses filename as the name)
   # and inject `agent: build` as the last frontmatter key.
@@ -97,6 +97,8 @@ let
   };
 in
 {
+  home.packages = [ pkgs.opencode cq ];
+
   home.file.".config/opencode" = {
     source = opencodeEnv;
     recursive = true;

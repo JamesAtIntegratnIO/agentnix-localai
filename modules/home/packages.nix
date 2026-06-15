@@ -16,7 +16,6 @@ let
   # AI / LLM tools
   ai = with pkgs; [
     lmstudio
-    opencode
   ];
 
   # Project scaffolding
