@@ -31,7 +31,8 @@ let
   languages = with pkgs; [
     go
     golangci-lint
-    uv   # Python package runner — needed for uvx mcp-server-qdrant
+    nixd   # Nix language server for LSP diagnostics
+    uv     # Python package runner — needed for uvx mcp-server-qdrant
   ];
 
   # Local AI stack

@@ -41,6 +41,8 @@ let
     models     = import ./models.nix;
     agents     = import ./agent-defs {};
 
+    extraConfig = { lsp = true; };
+
     mcpServers = {
       cq = {
         type    = "local";

@@ -24,6 +24,7 @@
     websearch = "allow";
     external_directory = "ask";
     doom_loop = "allow";
+    lsp = "allow";
   };
 
   mkSubagentPermission = bash: {
@@ -39,6 +40,7 @@
     external_directory = "ask";
     doom_loop = "allow";
     task = "deny";
+    lsp = "allow";
     inherit bash;
   };
 
@@ -56,5 +58,6 @@
     "websearch"
     "external_directory"
     "doom_loop"
+    "lsp"
   ];
 }

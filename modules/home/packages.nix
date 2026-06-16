@@ -18,9 +18,15 @@ let
     lmstudio
   ];
 
+  # LSP servers for agent diagnostics
+  lsp = with pkgs; [
+    pyright
+    typescript-language-server
+  ];
+
   # Project scaffolding
   scaffolding = with pkgs; [
     cookiecutter
   ];
 in
-  search ++ coreutils ++ ai ++ scaffolding
+  search ++ coreutils ++ ai ++ lsp ++ scaffolding
