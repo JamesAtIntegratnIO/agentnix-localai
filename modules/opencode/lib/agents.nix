@@ -9,9 +9,11 @@
 { pkgs, lib, agents }:
 let
   # Canonical key order for the permission: block in agent frontmatter.
+  # This is the single source of truth for permission rendering order.
   permissionOrder = [
     "read" "edit" "glob" "grep" "list" "bash" "task" "skill"
     "question" "webfetch" "websearch" "external_directory" "doom_loop"
+    "lsp"
   ];
 
   renderPermissionEntry = permission: key:

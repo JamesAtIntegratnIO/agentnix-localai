@@ -1,5 +1,11 @@
 { lib, buildGoModule, fetchFromGitHub }:
 
+# NOTE: This builds the cq binary from Go source, which adds rebuild time.
+# If a pre-built binary is available from a GitHub release (e.g.,
+# https://github.com/mozilla-ai/cq/releases), consider replacing this
+# derivation with a fetchFromGitHub that points to the pre-built artifact
+# to speed up rebuilds significantly.
+
 buildGoModule rec {
   pname = "cq";
   version = "0.11.0";

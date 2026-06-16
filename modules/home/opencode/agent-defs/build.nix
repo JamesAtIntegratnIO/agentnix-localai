@@ -1,6 +1,10 @@
 { common }:
 {
   description = "Build Agent";
+  # NOTE: This agent has mode = "primary", the same as project_lead.
+  # Both can operate independently; opencode routes tasks to primary agents
+  # based on context. Verify opencode's multi-primary behavior if unexpected
+  # routing occurs.
   mode = "primary";
   steps = 40;
   temperature = 0.2;
@@ -56,13 +60,5 @@ You are the Build agent. Your goal is to implement changes directly, keep qualit
 ## Communication Style
 
 Concise, technical, and execution-focused. Report progress with specific file and command references.
-
-## Project Rule Awareness
-
-Before planning or executing any non-trivial task, check for a project-level AGENTS.md in the current working tree and treat its instructions as mandatory constraints.
-
-- If project AGENTS.md and global instructions conflict, prioritize the project AGENTS.md for project-specific behavior.
-- Re-check project AGENTS.md whenever the task scope changes.
-- If an instruction is ambiguous, ask the user before proceeding.
-'';
+  '' + common.projectRuleAwareness;
 }

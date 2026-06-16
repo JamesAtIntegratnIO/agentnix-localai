@@ -9,6 +9,15 @@
 #
 # All content (models, agents, mcp servers, skills, commands) is supplied by
 # the caller. This module defines no opinions about what models or agents to use.
+#
+# Parameter types (lib.types notation for documentation):
+#   models      :: lib.types.attrs       — { model, small_model, provider }
+#   agents      :: lib.types.attrsOf lib.types.attrs (default: {})
+#   mcpServers  :: lib.types.attrsOf lib.types.attrs (default: {})
+#   skills      :: lib.types.attrsOf (lib.types.path) (default: {})
+#   commands    :: lib.types.attrsOf lib.types.path (default: {})
+#   agentsMd    :: lib.types.str (default: "")
+#   extraConfig :: lib.types.attrs (default: {})
 { pkgs, lib }:
 {
   mkOpencodeEnv =
@@ -20,6 +29,13 @@
     , agentsMd    ? ""    # string: AGENTS.md body; file is omitted when ""
     , extraConfig ? {}    # attrset: merged last into opencode.json
     }:
+    assert lib.assertMsg (builtins.isAttrs models) "models must be an attrset";
+    assert lib.assertMsg (builtins.isAttrs agents) "agents must be an attrset";
+    assert lib.assertMsg (builtins.isAttrs mcpServers) "mcpServers must be an attrset";
+    assert lib.assertMsg (builtins.isAttrs skills) "skills must be an attrset";
+    assert lib.assertMsg (builtins.isAttrs commands) "commands must be an attrset";
+    assert lib.assertMsg (builtins.isString agentsMd) "agentsMd must be a string";
+    assert lib.assertMsg (builtins.isAttrs extraConfig) "extraConfig must be an attrset";
     let
       buildConfig = import ./lib/config.nix;
       buildAgents = import ./lib/agents.nix;

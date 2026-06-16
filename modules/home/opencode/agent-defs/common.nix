@@ -44,20 +44,16 @@
     inherit bash;
   };
 
-  permissionOrder = [
-    "read"
-    "edit"
-    "glob"
-    "grep"
-    "list"
-    "bash"
-    "task"
-    "skill"
-    "question"
-    "webfetch"
-    "websearch"
-    "external_directory"
-    "doom_loop"
-    "lsp"
-  ];
+  # Shared "Project Rule Awareness" section — extracted to avoid 6 lines of
+  # identical text duplicated across all 10 agent definitions (60 lines total).
+  projectRuleAwareness = ''
+
+    ## Project Rule Awareness
+
+    Before planning or executing any non-trivial task, check for a project-level AGENTS.md in the current working tree and treat its instructions as mandatory constraints.
+
+    - If project AGENTS.md and global instructions conflict, prioritize the project AGENTS.md for project-specific behavior.
+    - Re-check AGENTS.md whenever the task scope changes.
+    - If an instruction is ambiguous, ask the user before proceeding.
+  '';
 }

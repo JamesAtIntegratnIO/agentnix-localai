@@ -7,8 +7,11 @@ in
 {
   # Keep the local AI directories writable for launchd user agents.
   # Qdrant writes temporary snapshot data relative to CWD.
+  # The ollama models directory is also created here so the service starts
+  # correctly when `enableOllama` is flipped to true.
   system.activationScripts.localAiDirs.text = ''
-    /bin/mkdir -p "${logDir}" "${qdrantDataDir}"
+    /bin/mkdir -p "${logDir}" "${qdrantDataDir}" \
+                 "/Users/${username}/Library/Application Support/local-ai/ollama"
     /usr/sbin/chown -R ${username}:staff "/Users/${username}/Library/Logs/local-ai" "/Users/${username}/Library/Application Support/local-ai"
   '';
 
@@ -44,7 +47,9 @@ in
   launchd.user.agents.qdrant = {
     serviceConfig = {
       Label = "org.nixos.qdrant";
-      WorkingDirectory = qdrantDataDir;
+      # Use the parent directory as WorkingDirectory to avoid fragile relative
+      # path resolution when Qdrant creates subdirectories within storage_path.
+      WorkingDirectory = "/Users/${username}/Library/Application Support/local-ai/";
       ProgramArguments = [
         "${pkgs.qdrant}/bin/qdrant"
         "--config-path" "/etc/local-ai/qdrant.yaml"

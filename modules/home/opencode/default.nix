@@ -12,26 +12,48 @@ let
   };
 
   # Qdrant agent skills — 8 hub skills teaching agents when/why/how to use Qdrant.
+  # Pinned to a specific commit SHA to prevent build breakage on upstream `main` changes.
   qdrantSkills = pkgs.fetchFromGitHub {
     owner = "qdrant";
     repo  = "skills";
-    rev   = "main";
+    rev   = "80f1980d126039c762664a3fe660bbad2eb1ec11";
     hash  = "sha256-ZM7BC8uHPzAGwUa1niV7TEuUHUAgaJB8Eska9ufljSM=";
   };
 
   # cq binary used by shell completion and cq MCP server.
   cq = pkgs.callPackage ./pkgs/cq.nix {};
 
+  # Pre-built Python environment with mcp-server-qdrant installed via uv.
+  # This eliminates per-session PyPI resolution latency and network dependency
+  # for the qdrant MCP server. The venv is built at Nix evaluation time so the
+  # package is cached in the store.
+  # HOME is redirected because the Nix sandbox uses /homeless-shelter as HOME
+  # which is read-only; uv needs to write its cache and Python downloads there.
+  # SSL_CERT_FILE is set to the nixpkgs ca-cert bundle because the sandbox
+  # defaults to /no-cert-file.crt which doesn't exist.
+  # rustc/cargo are needed because mcp-server-qdrant depends on pydantic-core
+  # which includes a Rust native extension that must be compiled.
+  # --only-binary :all: ensures we use pre-built wheels to avoid compilation
+  # failures in the sandbox (pydantic-core Rust builds are fragile on some platforms).
+  qdrantMcpEnv = pkgs.runCommand "qdrant-mcp-env" {
+    nativeBuildInputs = [ pkgs.uv pkgs.cacert ];
+  } ''
+    export HOME="$TMPDIR"
+    export SSL_CERT_FILE="${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
+    uv venv "$out"
+    uv pip install --python "$out/bin/python" --only-binary :all: mcp-server-qdrant
+  '';
+
   # Strip the `name:` frontmatter field (opencode uses filename as the name)
-  # and inject `agent: build` as the last frontmatter key.
-  transformCqCommand = file:
+  # and inject `agent: <name>` as the last frontmatter key.
+  transformCqCommand = { file, agent }:
     pkgs.runCommand "cq-cmd-${builtins.baseNameOf file}" {
       nativeBuildInputs = [ pkgs.gawk ];
     } ''
-      awk '
+      awk -v agent="${agent}" '
         BEGIN { fm=1 }
         NR==1 { print; next }
-        fm && /^---$/ { print "agent: build"; print; fm=0; next }
+        fm && /^---$/ { print "agent: " agent; print; fm=0; next }
         fm && /^name:/ { next }
         { print }
       ' ${file} > $out
@@ -39,7 +61,7 @@ let
 
   opencodeEnv = mkOpencodeEnv {
     models     = import ./models.nix;
-    agents     = import ./agent-defs {};
+    agents     = import ./agent-defs { inherit lib; };
 
     extraConfig = { lsp = true; };
 
@@ -53,10 +75,12 @@ let
         };
       };
       # mcp-server-qdrant: semantic memory — store/retrieve information via Qdrant.
+      # Uses a pre-built Python environment (qdrantMcpEnv) so the package is
+      # resolved at build time, eliminating per-session PyPI latency.
       qdrant = {
         type    = "local";
         enabled = true;
-        command = [ "${pkgs.uv}/bin/uvx" "mcp-server-qdrant" ];
+        command = [ "${qdrantMcpEnv}/bin/python" "-m" "mcp_server_qdrant" ];
         environment = {
           QDRANT_URL      = "http://127.0.0.1:6333";
           COLLECTION_NAME = "opencode-memory";
@@ -78,8 +102,14 @@ let
     };
 
     commands = {
-      "cq-reflect" = transformCqCommand "${cqSrc}/plugins/cq/commands/reflect.md";
-      "cq-status"  = transformCqCommand "${cqSrc}/plugins/cq/commands/status.md";
+      "cq-reflect" = transformCqCommand {
+        file  = "${cqSrc}/plugins/cq/commands/reflect.md";
+        agent = "build";
+      };
+      "cq-status" = transformCqCommand {
+        file  = "${cqSrc}/plugins/cq/commands/status.md";
+        agent = "build";
+      };
     };
 
     agentsMd = ''

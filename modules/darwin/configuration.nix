@@ -20,13 +20,13 @@ in
   programs.zsh.enable = true;
 
   # Copy GUI apps from the nix store into /Applications/Nix Apps so Spotlight finds them.
-  # We interpolate store paths directly so this runs correctly at activation time,
-  # before Home Manager has a chance to populate ~/Applications.
+  # We use a symlink instead of cp -rL so the directory creation is safe (other apps
+  # placed here won't be destroyed on rebuild) and the operation is atomic.
   system.activationScripts.applications.text = pkgs.lib.mkForce ''
     echo "setting up /Applications/Nix Apps..." >&2
-    rm -rf /Applications/Nix\ Apps
     mkdir -p /Applications/Nix\ Apps
-    cp -rL ${pkgs.lmstudio}/Applications/LM\ Studio.app /Applications/Nix\ Apps/
+    rm -f "/Applications/Nix Apps/LM Studio.app"
+    ln -sfT ${pkgs.lmstudio}/Applications/LM\ Studio.app "/Applications/Nix Apps/LM Studio.app"
   '';
 
   environment.systemPackages = packages.all;

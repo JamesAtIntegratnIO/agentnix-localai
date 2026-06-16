@@ -36,9 +36,11 @@ lib.mkMerge [
       '';
     };
 
-    # cq — store knowledge DB in a stable path shared with the MCP server config.
+    # Environment variables for opencode integrations.
     home.sessionVariables = {
+      # Path to the cq knowledge database — shared with the cq MCP server config.
       CQ_LOCAL_DB_PATH = "/Users/${username}/.local/share/cq/knowledge.db";
+      # Enable Exa web search integration in opencode. Set to "" or remove to disable.
       OPENCODE_ENABLE_EXA = "1";
     };
   }
