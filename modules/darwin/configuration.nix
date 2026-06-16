@@ -22,10 +22,12 @@ in
   # Copy GUI apps from the nix store into /Applications/Nix Apps so Spotlight finds them.
   # We use a symlink instead of cp -rL so the directory creation is safe (other apps
   # placed here won't be destroyed on rebuild) and the operation is atomic.
+  # Note: rm -rf is needed here because LM Studio.app is a directory; we target only
+  # the specific file to avoid destroying other apps in the directory.
   system.activationScripts.applications.text = pkgs.lib.mkForce ''
     echo "setting up /Applications/Nix Apps..." >&2
     mkdir -p /Applications/Nix\ Apps
-    rm -f "/Applications/Nix Apps/LM Studio.app"
+    rm -rf "/Applications/Nix Apps/LM Studio.app"
     ln -sfT ${pkgs.lmstudio}/Applications/LM\ Studio.app "/Applications/Nix Apps/LM Studio.app"
   '';
 
