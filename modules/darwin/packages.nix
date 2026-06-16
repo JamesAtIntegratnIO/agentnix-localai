@@ -36,7 +36,11 @@ let
   ];
 
   # Local AI stack
-  ai = [ pkgs.ollama pkgs.qdrant ];
+  ai = [
+    pkgs.lmstudio
+    pkgs.ollama
+    pkgs.qdrant
+  ];
 in {
   # Flat list for environment.systemPackages.
   all = vcs ++ editors ++ network ++ monitoring ++ utils ++ languages ++ ai;

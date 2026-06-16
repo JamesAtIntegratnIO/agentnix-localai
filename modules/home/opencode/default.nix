@@ -35,12 +35,17 @@ let
   # which includes a Rust native extension that must be compiled.
   # --only-binary :all: ensures we use pre-built wheels to avoid compilation
   # failures in the sandbox (pydantic-core Rust builds are fragile on some platforms).
+  # IMPORTANT: force uv to use nixpkgs Python.
+  # If uv downloads its own interpreter during the build, the venv can end up
+  # symlinked to /nix/var/nix/builds/... paths that disappear after build,
+  # causing runtime ENOENT for opencode MCP process spawn.
   qdrantMcpEnv = pkgs.runCommand "qdrant-mcp-env" {
-    nativeBuildInputs = [ pkgs.uv pkgs.cacert ];
+    nativeBuildInputs = [ pkgs.uv pkgs.cacert pkgs.python3 ];
   } ''
     export HOME="$TMPDIR"
     export SSL_CERT_FILE="${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
-    uv venv "$out"
+    export UV_PYTHON_DOWNLOADS=never
+    uv venv --python ${pkgs.python3}/bin/python3 "$out"
     uv pip install --python "$out/bin/python" --only-binary :all: mcp-server-qdrant
   '';
 
@@ -63,7 +68,12 @@ let
     models     = import ./models.nix;
     agents     = import ./agent-defs { inherit lib; };
 
-    extraConfig = { lsp = true; };
+    extraConfig = {
+      lsp = true;
+      # Make skill discovery explicit so all Nix-managed skills (including
+      # qdrant/*) are always scanned from the managed global directory.
+      skills.paths = [ "/Users/${username}/.config/opencode/skills" ];
+    };
 
     mcpServers = {
       cq = {
@@ -80,7 +90,7 @@ let
       qdrant = {
         type    = "local";
         enabled = true;
-        command = [ "${qdrantMcpEnv}/bin/python" "-m" "mcp_server_qdrant" ];
+        command = [ "${qdrantMcpEnv}/bin/mcp-server-qdrant" ];
         environment = {
           QDRANT_URL      = "http://127.0.0.1:6333";
           COLLECTION_NAME = "opencode-memory";
@@ -182,7 +192,9 @@ let
   '';
 in
 {
-  home.packages = [ pkgs.opencode cq openspec ];
+  # Keep qdrantMcpEnv in the Home Manager profile so the interpreter path used
+  # in opencode.json remains GC-rooted and cannot disappear between sessions.
+  home.packages = [ pkgs.opencode cq openspec qdrantMcpEnv ];
 
   home.file.".config/opencode" = {
     source = opencodeEnvWithOpenSpec;

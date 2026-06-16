@@ -19,16 +19,20 @@ in
 
   programs.zsh.enable = true;
 
-  # Copy GUI apps from the nix store into /Applications/Nix Apps so Spotlight finds them.
-  # We use a symlink instead of cp -rL so the directory creation is safe (other apps
-  # placed here won't be destroyed on rebuild) and the operation is atomic.
-  # Note: rm -rf is needed here because LM Studio.app is a directory; we target only
-  # the specific file to avoid destroying other apps in the directory.
+  # IMPORTANT: LM Studio MUST be a real copied app bundle in /Applications.
+  # DO NOT switch this back to a symlink: LaunchServices/Spotlight may fail to
+  # discover symlinked app bundles in /Applications on macOS.
+  # We copy from the Nix store each activation so app discovery remains reliable.
   system.activationScripts.applications.text = pkgs.lib.mkForce ''
-    echo "setting up /Applications/Nix Apps..." >&2
-    mkdir -p /Applications/Nix\ Apps
-    rm -rf "/Applications/Nix Apps/LM Studio.app"
-    ln -sfT ${pkgs.lmstudio}/Applications/LM\ Studio.app "/Applications/Nix Apps/LM Studio.app"
+    echo "setting up /Applications/LM Studio.app..." >&2
+    app_source="$(/usr/bin/find ${pkgs.lmstudio}/Applications -maxdepth 1 -type d -name '*.app' | /usr/bin/head -n 1)"
+    if [ -n "$app_source" ]; then
+      rm -rf "/Applications/LM Studio.app"
+      /usr/bin/ditto "$app_source" "/Applications/LM Studio.app"
+      /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "/Applications/LM Studio.app" >/dev/null 2>&1 || true
+    else
+      echo "warning: could not find LM Studio app bundle under ${pkgs.lmstudio}/Applications" >&2
+    fi
   '';
 
   environment.systemPackages = packages.all;
