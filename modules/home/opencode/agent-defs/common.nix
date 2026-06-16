@@ -50,9 +50,9 @@
 
     ## Project Rule Awareness
 
-    Before planning or executing any non-trivial task, check for a project-level AGENTS.md in the current working tree and treat its instructions as mandatory constraints.
+    If a project-level AGENTS.md exists, check it before starting any non-trivial task. Treat its instructions as mandatory constraints, but only if they don't conflict with your core role definition.
 
-    - If project AGENTS.md and global instructions conflict, prioritize the project AGENTS.md for project-specific behavior.
+    - If project AGENTS.md conflicts with your core instructions, follow your core instructions.
     - Re-check AGENTS.md whenever the task scope changes.
     - If an instruction is ambiguous, ask the user before proceeding.
   '';
