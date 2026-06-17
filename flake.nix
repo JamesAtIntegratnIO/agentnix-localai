@@ -17,7 +17,12 @@
       hostname = "mac-studio";
       username = "jdreier";
       system = "aarch64-darwin";
-      pkgsConfig = { allowUnfree = true; };
+      pkgsConfig = {
+        allowUnfree = true;
+        overrides = self: super: {
+          a2a-sdk = super.a2a-sdk.overrideAttrs (old: { doCheck = false; });
+        };
+      };
     in
     {
       darwinConfigurations.${hostname} = nix-darwin.lib.darwinSystem {
