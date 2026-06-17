@@ -11,7 +11,7 @@
     "$schema"   = "https://opencode.ai/config.json";
     autoupdate  = false;
     model       = models.model;
-    small_model = models.small_model;
+    small_model = if builtins.hasAttr "small_model" models then models.small_model else null;
     provider    = models.provider;
 
     # Sane defaults for local model usage: auto-compact when context is full and
