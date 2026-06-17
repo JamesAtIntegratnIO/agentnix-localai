@@ -20,19 +20,15 @@
       pkgsConfig = {
         allowUnfree = true;
         overrides = self: super: {
-          # a2a-sdk has darwin-specific test failures (FastAPI introspection).
-          # disabledTests in nixpkgs only affects checkPhase, but tests run during
-          # buildPhase via pytest hooks in the pyproject build system.
-          # Strip test deps from nativeCheckInputs to prevent test execution.
+          # a2a-sdk tests fail on darwin due to FastAPI introspection issues
+          # (AttributeError: Can't get local object 'FastAPI.setup.<locals>.openapi').
+          # Since pytest runs during buildPhase via the pyproject build system,
+          # disabledTests and nativeCheckInputs overrides don't help.
+          # Remove the failing test file before build starts.
           a2a-sdk = super.a2a-sdk.overrideAttrs (old: {
-            nativeCheckInputs = with old; lib.filter (p:
-              p.pname or "" != "pytest-asyncio" &&
-              p.pname or "" != "pytest-cov-stub" &&
-              p.pname or "" != "pytest-timeout" &&
-              p.pname or "" != "pytest-xdist" &&
-              p.pname or "" != "pytestCheckHook" &&
-              p.pname or "" != "respx"
-            ) nativeCheckInputs;
+            postPatch = ''
+              rm -f tests/e2e/push_notifications/test_default_push_notification_support.py
+            '' + (old.postPatch or "");
           });
         };
       };
