@@ -3,8 +3,6 @@ let
   logDir = "/Users/${username}/Library/Logs/local-ai";
   qdrantDataDir = "/Users/${username}/Library/Application Support/local-ai/qdrant";
   enableOllama = false;
-  enableLitellm = false;
-  litellmConfig = import ./litellm-proxy { inherit pkgs; };
 in
 {
   # Keep the local AI directories writable for launchd user agents.
@@ -14,6 +12,7 @@ in
   system.activationScripts.localAiDirs.text = ''
     /bin/mkdir -p "${logDir}" "${qdrantDataDir}" \
                  "/Users/${username}/Library/Application Support/local-ai/ollama"
+
     /usr/sbin/chown -R ${username}:staff "/Users/${username}/Library/Logs/local-ai" "/Users/${username}/Library/Application Support/local-ai"
   '';
 
@@ -60,21 +59,6 @@ in
       KeepAlive = true;
       StandardOutPath = "${logDir}/qdrant.log";
       StandardErrorPath = "${logDir}/qdrant.err";
-    };
-  };
-
-  # LiteLLM proxy gateway — routes opencode → LiteLLM (:4000) → LM Studio (:1234).
-  launchd.user.agents.litellm = lib.mkIf enableLitellm {
-    serviceConfig = {
-      Label = "org.nixos.litellm";
-      ProgramArguments = [
-        "${litellmConfig.litellmProxy}/bin/litellm"
-        "--config" litellmConfig.configYaml
-      ];
-      RunAtLoad = true;
-      KeepAlive = true;
-      StandardOutPath = "${logDir}/litellm.log";
-      StandardErrorPath = "${logDir}/litellm.err";
     };
   };
 

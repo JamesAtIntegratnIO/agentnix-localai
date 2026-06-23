@@ -1,7 +1,5 @@
 { pkgs }:
 let
-  litellmProxy = import ./litellm-proxy { inherit pkgs; };
-
   # Version control & security
   vcs = with pkgs; [
     git
@@ -42,7 +40,6 @@ let
     pkgs.lmstudio
     pkgs.ollama
     pkgs.qdrant
-    litellmProxy.litellmProxy
   ];
 in {
   # Flat list for environment.systemPackages.

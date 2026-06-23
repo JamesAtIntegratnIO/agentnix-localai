@@ -2,6 +2,7 @@
 let
   homePackages = import ./packages.nix { inherit pkgs; };
   opencodeModule = import ./opencode/default.nix { inherit pkgs username lib inputs; };
+  hermesModule = import ./hermes/default.nix { inherit pkgs username lib inputs; };
 in
 lib.mkMerge [
   {
@@ -46,4 +47,5 @@ lib.mkMerge [
   }
 
   opencodeModule
+  hermesModule
 ]

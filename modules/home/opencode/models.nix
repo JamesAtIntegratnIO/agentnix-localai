@@ -1,13 +1,12 @@
 let
   providers = {
     # LM Studio local server — load Qwen3-Coder-Next-MLX-4bit in the LM Studio UI first.
-    # LiteLLM proxy on port 4000 routes requests to LM Studio on port 1234.
     lmstudio = {
       npm = "@ai-sdk/openai-compatible";
       name = "LM Studio (local)";
       options = {
-        baseURL = "http://127.0.0.1:4000/v1";
-        apiKey = "";
+        baseURL = "http://127.0.0.1:1234/v1";
+        apiKey = "lmstudio";
       };
     };
   };
