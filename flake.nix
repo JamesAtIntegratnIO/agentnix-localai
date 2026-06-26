@@ -31,6 +31,14 @@
               rm -f tests/e2e/push_notifications/test_default_push_notification_support.py
             '' + (old.postPatch or "");
           });
+
+          lmstudio = super.lmstudio.overrideAttrs (old: {
+            version = "0.4.17-4";
+            src = super.fetchurl {
+              url = "https://installers.lmstudio.ai/darwin/arm64/${old.version}/LM-Studio-${old.version}-arm64.dmg";
+              sha256 = "sha256-r8LykADF4Lw6jVucPIwyUXOUyBxOjvgQUU0XpGhY02E=";
+            };
+          });
         };
       };
     in
