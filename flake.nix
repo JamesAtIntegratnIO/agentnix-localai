@@ -20,29 +20,32 @@
       system = "aarch64-darwin";
       pkgsConfig = {
         allowUnfree = true;
-        overrides = self: super: {
-          # a2a-sdk tests fail on darwin due to FastAPI introspection issues
-          # (AttributeError: Can't get local object 'FastAPI.setup.<locals>.openapi').
-          # Since pytest runs during buildPhase via the pyproject build system,
-          # disabledTests and nativeCheckInputs overrides don't help.
-          # Remove the failing test file before build starts.
-          a2a-sdk = super.a2a-sdk.overrideAttrs (old: {
-            postPatch = ''
-              rm -f tests/e2e/push_notifications/test_default_push_notification_support.py
-            '' + (old.postPatch or "");
-          });
-
-          lmstudio = super.lmstudio.overrideAttrs (old: {
-            version = "0.4.17-4";
-            src = super.fetchurl {
-              url = "https://installers.lmstudio.ai/darwin/arm64/${old.version}/LM-Studio-${old.version}-arm64.dmg";
-              sha256 = "sha256-r8LykADF4Lw6jVucPIwyUXOUyBxOjvgQUU0XpGhY02E=";
-            };
-          });
-        };
       };
     in
     {
+      lmstudio-overlay = self: super: {
+        # a2a-sdk tests fail on darwin due to FastAPI introspection issues
+        # (AttributeError: Can't get local object 'FastAPI.setup.<locals>.openapi').
+        # Since pytest runs during buildPhase via the pyproject build system,
+        # disabledTests and nativeCheckInputs overrides don't help.
+        # Remove the failing test file before build starts.
+        a2a-sdk = super.a2a-sdk.overrideAttrs (old: {
+          postPatch = ''
+            rm -f tests/e2e/push_notifications/test_default_push_notification_support.py
+          '' + (old.postPatch or "");
+        });
+
+        lmstudio = super.lmstudio.overrideAttrs (old: let
+          version = "0.4.17-4";
+        in {
+          inherit version;
+          src = super.fetchurl {
+            url = "https://installers.lmstudio.ai/darwin/arm64/${version}/LM-Studio-${version}-arm64.dmg";
+            sha256 = "sha256-r8LykADF4Lw6jVucPIwyUXOUyBxOjvgQUU0XpGhY02E=";
+          };
+        });
+      };
+
       darwinConfigurations.${hostname} = nix-darwin.lib.darwinSystem {
         inherit system;
         specialArgs = {
@@ -51,6 +54,7 @@
         modules = [
           ./modules/darwin/configuration.nix
           { nixpkgs.config = pkgsConfig; }
+          { nixpkgs.overlays = [ self.lmstudio-overlay ]; }
           home-manager.darwinModules.home-manager
           {
             home-manager.useGlobalPkgs = true;
