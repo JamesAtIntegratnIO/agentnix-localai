@@ -22,7 +22,7 @@ let
 
   # Matt Pocock's engineering & productivity skills — 33 SKILL.md files across
   # engineering, productivity, misc, personal, and deprecated categories.
-  mattpocockSkills = pkgs.callPackage ../../nix/mattpocock-skills.nix {};
+  mattpocockSkills = pkgs.callPackage ../../nix/mattpocock-skills {};
 
   # cq binary used by shell completion and cq MCP server.
   cq = pkgs.callPackage ./pkgs/cq.nix {};

@@ -8,7 +8,7 @@ let
   hermesPackage = hermesPackages.default;
 
   # Matt Pocock skills — shared derivation, installed to ~/.agents/mattpocock-skills
-  mattpocockSkills = pkgs.callPackage ../../nix/mattpocock-skills.nix {};
+  mattpocockSkills = pkgs.callPackage ../../nix/mattpocock-skills {};
 
   mattpocockSkillsDir = pkgs.stdenvNoCC.mkDerivation {
     name = "mattpocock-skills-hermes";
