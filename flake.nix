@@ -4,6 +4,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     openspec.url = "github:Fission-AI/OpenSpec";
+    hermes-agent.url = "github:NousResearch/hermes-agent/v2026.6.19";
 
     nix-darwin.url = "github:lnl7/nix-darwin";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
