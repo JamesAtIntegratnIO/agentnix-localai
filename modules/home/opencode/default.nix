@@ -20,6 +20,10 @@ let
     hash  = "sha256-ZM7BC8uHPzAGwUa1niV7TEuUHUAgaJB8Eska9ufljSM=";
   };
 
+  # Matt Pocock's engineering & productivity skills — 33 SKILL.md files across
+  # engineering, productivity, misc, personal, and deprecated categories.
+  mattpocockSkills = pkgs.callPackage ../../nix/mattpocock-skills.nix {};
+
   # cq binary used by shell completion and cq MCP server.
   cq = pkgs.callPackage ./pkgs/cq.nix {};
 
@@ -109,6 +113,11 @@ let
       "qdrant-deployment-options"       = "${qdrantSkills}/skills/qdrant-deployment-options";
       "qdrant-model-migration"          = "${qdrantSkills}/skills/qdrant-model-migration";
       "qdrant-version-upgrade"          = "${qdrantSkills}/skills/qdrant-version-upgrade";
+      # Matt Pocock skills — engineering, productivity, misc, personal
+      "mattpocock-engineering"          = "${mattpocockSkills}/skills/engineering";
+      "mattpocock-productivity"         = "${mattpocockSkills}/skills/productivity";
+      "mattpocock-misc"                 = "${mattpocockSkills}/skills/misc";
+      "mattpocock-personal"             = "${mattpocockSkills}/skills/personal";
     };
 
     commands = {
