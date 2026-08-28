@@ -28,5 +28,10 @@ let
   scaffolding = with pkgs; [
     cookiecutter
   ];
+
+  # Cloud provider CLIs
+  cloud = with pkgs; [
+    google-cloud-sdk
+  ];
 in
-  search ++ coreutils ++ ai ++ lsp ++ scaffolding
+  search ++ coreutils ++ ai ++ lsp ++ scaffolding ++ cloud
